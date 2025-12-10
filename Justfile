@@ -1,5 +1,5 @@
 # Name of this service
-SERVICE := 'microservice-1'
+SERVICE := 'microservice-skladisce'
 
 build:
     docker build -t $(SERVICE):latest .
