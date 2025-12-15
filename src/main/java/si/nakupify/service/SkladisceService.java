@@ -11,9 +11,7 @@ import org.eclipse.microprofile.reactive.messaging.Emitter;
 import si.nakupify.entity.Event;
 import si.nakupify.entity.Snapshot;
 import si.nakupify.entity.SnapshotProduct;
-import si.nakupify.service.dto.RequestDTO;
-import si.nakupify.service.dto.ResponseDTO;
-import si.nakupify.service.dto.ZalogaDTO;
+import si.nakupify.service.dto.*;
 import si.nakupify.service.repository.SnapshotProductRepository;
 import si.nakupify.service.repository.SnapshotRepository;
 
@@ -129,22 +127,26 @@ public class SkladisceService {
         processedEvents = 0;
     }
 
-    public ZalogaDTO pridobiZalogo(Long id_izdelek) {
+    public PairDTO<ZalogaDTO, ErrorDTO> pridobiZalogo(Long id_izdelek) {
         SnapshotProduct state = skladisce.get(id_izdelek);
         if (state == null) {
-            log.info("");
-            return null;
+            log.info("Not Found Error: Zaloge za izdelek z id=" + id_izdelek + " ni bilo mogoče najti");
+            ErrorDTO notFoundError = new ErrorDTO(404, "Zaloge izdelka s podanim id_izdelek ni bilo mogoče najti!");
+            return new PairDTO<>(null, notFoundError);
         }
 
-        return new ZalogaDTO(id_izdelek, state.zaloga, state.rezervirano);
+        ZalogaDTO zaloga = new ZalogaDTO(id_izdelek, state.zaloga, state.rezervirano);
+
+        return new PairDTO<>(zaloga, null);
     }
 
     @Transactional
-    public ZalogaDTO dodajNovIzdelek(ZalogaDTO zalogaDTO) {
+    public PairDTO<ZalogaDTO, ErrorDTO> dodajNovIzdelek(ZalogaDTO zalogaDTO) {
         SnapshotProduct state = skladisce.get(zalogaDTO.getId_product());
         if (state != null) {
-            log.info("");
-            return null;
+            log.info("Conflict Error: Zaloga za podani izdelek že obstaja");
+            ErrorDTO conflictError = new ErrorDTO(409, "Zaloga za podani izdelek že obstaja.");
+            return new PairDTO<>(null, conflictError);
         }
 
         SnapshotProduct snapshotProduct = new SnapshotProduct();
@@ -156,7 +158,9 @@ public class SkladisceService {
         snapshotProductRepository.persist(snapshotProduct);
         skladisce.put(snapshotProduct.id_izdelek, snapshotProduct);
 
-        return new ZalogaDTO(snapshotProduct.id_izdelek, snapshotProduct.zaloga, snapshotProduct.rezervirano);
+        ZalogaDTO zaloga = new ZalogaDTO(snapshotProduct.id_izdelek, snapshotProduct.zaloga, snapshotProduct.rezervirano);
+
+        return new PairDTO<>(zaloga, null);
     }
 
     public void createEvent(RequestDTO requestDTO, Boolean success) {
@@ -173,11 +177,12 @@ public class SkladisceService {
         emitter.send(event);
     }
 
-    public ResponseDTO handleRequest(RequestDTO requestDTO) {
+    public PairDTO<ResponseDTO, ErrorDTO> handleRequest(RequestDTO requestDTO) {
         SnapshotProduct state = skladisce.get(requestDTO.getId_product());
         if (state == null) {
-            log.info("");
-            return null;
+            log.info("Not Found Error: Zaloge za izdelek z id=" + requestDTO.getId_product() + " ni bilo mogoče najti");
+            ErrorDTO notFoundError = new ErrorDTO(404, "Zaloge za podani izdelek ni bilo mogoče najti.");
+            return new PairDTO<>(null, notFoundError);
         }
 
         ResponseDTO responseDTO = new ResponseDTO();
@@ -210,15 +215,10 @@ public class SkladisceService {
                 }
                 break;
             case "RESERVATION_REMOVED", "RESERVATION_EXPIRED":
-                if (state.rezervirano >= requestDTO.getQuantityRemove()) {
-                    state.rezervirano -= requestDTO.getQuantityRemove();
-                    state.zaloga += requestDTO.getQuantityRemove();
-                    createEvent(requestDTO, true);
-                    responseDTO = new ResponseDTO(requestDTO.getId_request(), true);
-                } else {
-                    createEvent(requestDTO, false);
-                    responseDTO = new ResponseDTO(requestDTO.getId_request(), false);
-                }
+                state.rezervirano -= requestDTO.getQuantityRemove();
+                state.zaloga += requestDTO.getQuantityRemove();
+                createEvent(requestDTO, true);
+                responseDTO = new ResponseDTO(requestDTO.getId_request(), true);
                 break;
             case "RESERVATION_UPDATED":
                 Integer razlika = requestDTO.getQuantityAdd() - requestDTO.getQuantityRemove();
@@ -233,14 +233,9 @@ public class SkladisceService {
                 }
                 break;
             case "SOLD":
-                if (state.rezervirano >= requestDTO.getQuantityRemove()) {
-                    state.rezervirano -= requestDTO.getQuantityRemove();
-                    createEvent(requestDTO, true);
-                    responseDTO = new ResponseDTO(requestDTO.getId_request(), true);
-                } else {
-                    createEvent(requestDTO, false);
-                    responseDTO = new ResponseDTO(requestDTO.getId_request(), false);
-                }
+                state.rezervirano -= requestDTO.getQuantityRemove();
+                createEvent(requestDTO, true);
+                responseDTO = new ResponseDTO(requestDTO.getId_request(), true);
                 break;
             default:
                 break;
@@ -251,6 +246,6 @@ public class SkladisceService {
             createSnapshot();
         }
 
-        return responseDTO;
+        return new PairDTO<>(responseDTO, null);
     }
 }
