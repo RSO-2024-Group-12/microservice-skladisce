@@ -58,6 +58,10 @@ public class SkladisceService {
         log.info("Ustavitev microservice-skladisce.");
     }
 
+    public void setEmmiter(Emitter<Event> emitter) {
+        this.emitter = emitter;
+    }
+
     @Transactional
     public void pridobiSkladisce() {
         skladisce.clear();
