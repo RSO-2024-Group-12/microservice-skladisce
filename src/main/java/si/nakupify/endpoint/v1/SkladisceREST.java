@@ -42,9 +42,10 @@ public class SkladisceREST {
 
         if (requestDTO.getId_product() == null || requestDTO.getId_user() == null ||
                 requestDTO.getType() == null || requestDTO.getType().isBlank() ||
+                requestDTO.getTenant() == null || requestDTO.getTenant().isBlank() ||
                 requestDTO.getQuantityAdd() == null || requestDTO.getQuantityAdd() < 0 ||
                 requestDTO.getQuantityRemove() == null || requestDTO.getQuantityRemove() < 0) {
-            log.info("Validation fail: RequestDTO mora imeti podana polja: id_product, id_user, type, quantityAdd, quantityRemove");
+            log.info("Validation fail: RequestDTO mora imeti podana polja: id_product, id_user, tenant, type, quantityAdd, quantityRemove");
             String msg = "Polja id_product, id_user, type, quantityAdd, quantityRemove ne smejo biti prazna!";
             return new ErrorDTO(400, msg);
         }
@@ -65,8 +66,8 @@ public class SkladisceREST {
             return new ErrorDTO(400, msg);
         }
 
-        if (zalogaDTO.getId_product() == null) {
-            log.info("Validation fail: ZalogaDTO mora imeti podana polja: id_product");
+        if (zalogaDTO.getId_product() == null || zalogaDTO.getTenant() == null || zalogaDTO.getTenant().isBlank()) {
+            log.info("Validation fail: ZalogaDTO mora imeti podana polja: id_product, tenant");
             String msg = "Polje id_product ne sme biti prazno!";
             return new ErrorDTO(400, msg);
         }
