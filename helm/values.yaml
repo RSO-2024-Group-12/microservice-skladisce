@@ -18,5 +18,18 @@ probes:
     enabled: true
     path: /q/health/ready
 
-nameOverride: ""
-fullnameOverride: ""
+config:
+  kafka:
+    bootstrapServers: "nakupify-kafka-kafka-bootstrap.default.svc.cluster.local:9092"
+  postgres:
+    username: "nakupify"
+    password: "nakupify"
+    jdbcUrl: "jdbc:postgresql://nakupify-db-rw.default.svc.cluster.local:5432/nakupify"
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
