@@ -38,9 +38,10 @@ public class SkladisceServiceTest {
     @InjectMock
     KafkaEventReplayService kafkaEventReplayService;
 
-    private ZalogaDTO makeZalogaDTO(Long id, Integer stock, Integer reserved) {
+    private ZalogaDTO makeZalogaDTO(Long id, String tenant, Integer stock, Integer reserved) {
         ZalogaDTO zalogaDTO = new ZalogaDTO();
         zalogaDTO.setId_product(id);
+        zalogaDTO.setTenant(tenant);
         zalogaDTO.setStock(stock);
         zalogaDTO.setReserved(reserved);
         return zalogaDTO;
@@ -55,6 +56,7 @@ public class SkladisceServiceTest {
 
         SnapshotProduct product = new SnapshotProduct();
         product.id_izdelek = 1L;
+        product.tenant = "org1";
         product.zaloga = 100;
         product.rezervirano = 20;
         when(snapshotProductRepository.findBySnapshotId(snapshot.id)).thenReturn(List.of(product));
@@ -75,6 +77,7 @@ public class SkladisceServiceTest {
         ZalogaDTO zalogaDTO = result.getValue();
 
         assertEquals(1L, zalogaDTO.getId_product());
+        assertEquals("org1", zalogaDTO.getTenant());
         assertEquals(100, zalogaDTO.getStock());
         assertEquals(20 , zalogaDTO.getReserved());
 
@@ -91,7 +94,7 @@ public class SkladisceServiceTest {
             return null;
         }).when(snapshotProductRepository).persist(any(SnapshotProduct.class));
 
-        PairDTO<ZalogaDTO, ErrorDTO> result = skladisceService.dodajNovIzdelek(makeZalogaDTO(2L, 0, 0));
+        PairDTO<ZalogaDTO, ErrorDTO> result = skladisceService.dodajNovIzdelek(makeZalogaDTO(2L, "org1", 0, 0));
 
         assertNotNull(result);
         assertNotNull(result.getValue());
@@ -100,6 +103,7 @@ public class SkladisceServiceTest {
         ZalogaDTO zalogaDTO = result.getValue();
 
         assertEquals(2L, zalogaDTO.getId_product());
+        assertEquals("org1", zalogaDTO.getTenant());
         assertEquals(0, zalogaDTO.getStock());
         assertEquals(0 , zalogaDTO.getReserved());
 
@@ -116,6 +120,7 @@ public class SkladisceServiceTest {
         requestDTO.setType("STOCK_ADDED");
         requestDTO.setId_product(1L);
         requestDTO.setId_user(1L);
+        requestDTO.setTenant("org1");
         requestDTO.setQuantityAdd(100);
         requestDTO.setQuantityRemove(0);
 
