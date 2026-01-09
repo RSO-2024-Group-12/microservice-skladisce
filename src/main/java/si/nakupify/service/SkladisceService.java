@@ -67,6 +67,13 @@ public class SkladisceService {
         skladisce.clear();
 
         latestSnapshot = snapshotRepository.getLatestSnapshot();
+        if (latestSnapshot == null) {
+            Snapshot newSnapshot = new Snapshot(-1L);
+            snapshotRepository.persist(newSnapshot);
+            latestSnapshot = newSnapshot;
+            return;
+        }
+
         List<SnapshotProduct> snapshotProducts = snapshotProductRepository.findBySnapshotId(latestSnapshot.id);
 
         for (SnapshotProduct snapshotProduct : snapshotProducts) {

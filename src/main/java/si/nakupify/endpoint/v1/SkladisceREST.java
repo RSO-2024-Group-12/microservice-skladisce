@@ -75,7 +75,6 @@ public class SkladisceREST {
         return null;
     }
 
-
     @GET
     @Path("/zaloga/{id}")
     @Operation(
@@ -189,6 +188,13 @@ public class SkladisceREST {
             @APIResponse(
                     responseCode="400",
                     description="(BAD_REQUEST) Podana nepravilna oblika vhodnega objekta RequestDTO.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDTO.class)
+                    )),
+            @APIResponse(
+                    responseCode="401",
+                    description="(UNAUTHORIZED) Ni mogoče spreminjati podatkov druge organizacije.",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ErrorDTO.class)
