@@ -13,8 +13,6 @@ public class Event implements Serializable {
 
     private Long id_user;
 
-    private String tenant;
-
     private Integer quantityAdd;
 
     private Integer quantityRemove;
@@ -25,12 +23,11 @@ public class Event implements Serializable {
 
     public Event() {}
 
-    public Event(String id_request, String type, Long id_product, Long id_user, String tenant, Integer quantityAdd, Integer quantityRemove, Boolean success) {
+    public Event(String id_request, String type, Long id_product, Long id_user, Integer quantityAdd, Integer quantityRemove, Boolean success) {
         this.id_request = id_request;
         this.type = type;
         this.id_product = id_product;
         this.id_user = id_user;
-        this.tenant = tenant;
         this.quantityAdd = quantityAdd;
         this.quantityRemove = quantityRemove;
         this.timestamp = new Timestamp(System.currentTimeMillis());
@@ -67,14 +64,6 @@ public class Event implements Serializable {
 
     public void setId_user(Long id_user) {
         this.id_user = id_user;
-    }
-
-    public String getTenant() {
-        return tenant;
-    }
-
-    public void setTenant(String tenant) {
-        this.tenant = tenant;
     }
 
     public Integer getQuantityAdd() {
