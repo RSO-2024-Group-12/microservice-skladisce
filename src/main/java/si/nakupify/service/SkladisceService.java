@@ -128,7 +128,6 @@ public class SkladisceService {
             SnapshotProduct newSnapshotProduct = new SnapshotProduct();
             newSnapshotProduct.id_snapshot = newSnapshot.id;
             newSnapshotProduct.id_izdelek = snapshotProduct.id_izdelek;
-            newSnapshotProduct.tenant = snapshotProduct.tenant;
             newSnapshotProduct.zaloga = snapshotProduct.zaloga;
             newSnapshotProduct.rezervirano = snapshotProduct.rezervirano;
 
@@ -147,7 +146,7 @@ public class SkladisceService {
             return new PairDTO<>(null, notFoundError);
         }
 
-        ZalogaDTO zaloga = new ZalogaDTO(id_izdelek, state.tenant, state.zaloga, state.rezervirano);
+        ZalogaDTO zaloga = new ZalogaDTO(id_izdelek, state.zaloga, state.rezervirano);
 
         return new PairDTO<>(zaloga, null);
     }
@@ -164,14 +163,13 @@ public class SkladisceService {
         SnapshotProduct snapshotProduct = new SnapshotProduct();
         snapshotProduct.id_snapshot = latestSnapshot.id;
         snapshotProduct.id_izdelek = zalogaDTO.getId_product();
-        snapshotProduct.tenant = zalogaDTO.getTenant();
         snapshotProduct.zaloga = zalogaDTO.getStock();
         snapshotProduct.rezervirano = zalogaDTO.getReserved();
 
         snapshotProductRepository.persist(snapshotProduct);
         skladisce.put(snapshotProduct.id_izdelek, snapshotProduct);
 
-        ZalogaDTO zaloga = new ZalogaDTO(snapshotProduct.id_izdelek, snapshotProduct.tenant, snapshotProduct.zaloga, snapshotProduct.rezervirano);
+        ZalogaDTO zaloga = new ZalogaDTO(snapshotProduct.id_izdelek, snapshotProduct.zaloga, snapshotProduct.rezervirano);
 
         return new PairDTO<>(zaloga, null);
     }
@@ -182,7 +180,6 @@ public class SkladisceService {
         event.setType(requestDTO.getType());
         event.setId_product(requestDTO.getId_product());
         event.setId_user(requestDTO.getId_user());
-        event.setTenant(requestDTO.getTenant());
         event.setQuantityAdd(requestDTO.getQuantityAdd());
         event.setQuantityRemove(requestDTO.getQuantityRemove());
         event.setTimestamp(new Timestamp(System.currentTimeMillis()));
@@ -196,12 +193,6 @@ public class SkladisceService {
         if (state == null) {
             log.info("Not Found Error: Zaloge za izdelek z id=" + requestDTO.getId_product() + " ni bilo mogoče najti");
             ErrorDTO notFoundError = new ErrorDTO(404, "Zaloge za podani izdelek ni bilo mogoče najti.");
-            return new PairDTO<>(null, notFoundError);
-        }
-
-        if (!requestDTO.getTenant().equals(state.tenant)) {
-            log.info("Auth Error: Ne smete spreminjati podatkov druge organizacije");
-            ErrorDTO notFoundError = new ErrorDTO(401, "Ni mogoče spreminjati podatkov druge organizacije.");
             return new PairDTO<>(null, notFoundError);
         }
 

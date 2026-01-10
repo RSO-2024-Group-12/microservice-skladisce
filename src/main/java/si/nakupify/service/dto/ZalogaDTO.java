@@ -4,17 +4,14 @@ public class ZalogaDTO {
 
     private Long id_product;
 
-    private String tenant;
-
     private Integer stock;
 
     private Integer reserved;
 
     public ZalogaDTO() {}
 
-    public ZalogaDTO(Long id_product, String tenant, Integer stock, Integer reserved) {
+    public ZalogaDTO(Long id_product, Integer stock, Integer reserved) {
         this.id_product = id_product;
-        this.tenant = tenant;
         this.stock = stock;
         this.reserved = reserved;
     }
@@ -25,14 +22,6 @@ public class ZalogaDTO {
 
     public void setId_product(Long id_product) {
         this.id_product = id_product;
-    }
-
-    public String getTenant() {
-        return tenant;
-    }
-
-    public void setTenant(String tenant) {
-        this.tenant = tenant;
     }
 
     public Integer getStock() {

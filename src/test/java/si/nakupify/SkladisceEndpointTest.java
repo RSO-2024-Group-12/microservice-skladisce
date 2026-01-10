@@ -20,10 +20,9 @@ public class SkladisceEndpointTest {
     @InjectMock
     SkladisceService skladisceService;
 
-    private ZalogaDTO zalogaDTO(Long id, String tenant, Integer stock, Integer reserved) {
+    private ZalogaDTO zalogaDTO(Long id, Integer stock, Integer reserved) {
         ZalogaDTO zalogaDTO = new ZalogaDTO();
         zalogaDTO.setId_product(id);
-        zalogaDTO.setTenant(tenant);
         zalogaDTO.setStock(stock);
         zalogaDTO.setReserved(reserved);
         return zalogaDTO;
@@ -38,7 +37,7 @@ public class SkladisceEndpointTest {
 
     @Test
     void getZaloga_test() {
-        when(skladisceService.pridobiZalogo(1L)).thenReturn(new PairDTO<>(zalogaDTO(1L, "org1",100, 0), null));
+        when(skladisceService.pridobiZalogo(1L)).thenReturn(new PairDTO<>(zalogaDTO(1L,100, 0), null));
 
         given()
                 .accept(ContentType.JSON)
@@ -47,7 +46,6 @@ public class SkladisceEndpointTest {
         .then()
                 .statusCode(200)
                 .body("id_product", equalTo(1))
-                .body("tenant", equalTo("org1"))
                 .body("stock", equalTo(100))
                 .body("reserved", equalTo(0));
 
@@ -56,12 +54,11 @@ public class SkladisceEndpointTest {
 
     @Test
     void createIzdelek_test() {
-        when(skladisceService.dodajNovIzdelek(any())).thenReturn(new PairDTO<>(zalogaDTO(5L, "org1",0, 0), null));
+        when(skladisceService.dodajNovIzdelek(any())).thenReturn(new PairDTO<>(zalogaDTO(5L,0, 0), null));
 
         String requestBody = """
         {
             "id_product": 5,
-            "tenant": "org1",
             "stock": 0,
             "reserved": 0
         }
@@ -75,7 +72,6 @@ public class SkladisceEndpointTest {
         .then()
                 .statusCode(201)
                 .body("id_product", equalTo(5))
-                .body("tenant", equalTo("org1"))
                 .body("stock", equalTo(0))
                 .body("reserved", equalTo(0));
 
@@ -92,7 +88,6 @@ public class SkladisceEndpointTest {
                 "type": "STOCK_ADDED",
                 "id_product": 1,
                 "id_user": 1,
-                "tenant": "org1",
                 "quantityAdd": 100,
                 "quantityRemove": 0
         }
